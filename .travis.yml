@@ -1,0 +1,23 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+  - docker build -t psypriest/react-test -f ./client/Dockerfil.dev ./client
+
+script:
+  - docker run psypriest/react-test npm test -- --coverage
+  
+after_success:
+  - docker build -t psypriest/multi-client ./client
+  - docker build -t psypriest/multi-nginx ./nginx
+  - docker build -t psypriest/multi-server ./server
+  - docker build -t psypriest/multi-worker ./worker
+    # login to the docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push psypriest/multi-client
+  - docker push psypriest/multi-nginx
+  - docker push psypriest/multi-server
+  - docker push psypriest/multi-worker  
+    # take those images and push them to docker hub
+
